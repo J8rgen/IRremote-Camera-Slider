@@ -44,3 +44,7 @@ This project controls a stepper motor using an IR remote, an endstop sensor, and
 - [Linear Bushing](https://www.thingiverse.com/thing:2202854)
 - [Belt Tensioner](https://www.thingiverse.com/thing:10082)
 - [EndStop MicroSwitch](https://www.thingiverse.com/thing:6004532)
+
+
+![slider sketch_bb](https://github.com/J8rgen/IRremote-Camera-Slider/assets/92487999/5657f01d-9bed-4b6f-b7f0-2de4ae779095)
+
