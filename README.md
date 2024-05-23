@@ -12,11 +12,16 @@ Features
 Hardware Requirements
 
     Arduino board (e.g., Arduino Uno)
-    Stepper motor and driver
-    IR remote and receiver module
+    Stepper motor
+    Stepper motor driver (e.g. DRV8825)
+    IR receiver module (e.g. TSOP4838)
     Endstop switch
     16x2 LCD display
     Connecting wires and a breadboard
+    10k ohm potentiometer
+    220 ohm resistor
+    100uF capacitor
+    IR remote
 
 Pin Configuration
 
@@ -27,3 +32,15 @@ Pin Configuration
         dirPin: 6
         enPin: 13 (currently not used)
     LCD Pins: 12, 11, 5, 4, 3, 2
+
+Useful 3D Prints
+
+    Arduino Uno + Half Size Breadboard Holder
+    Pulley Mount
+    Linear Rail Shaft 8mm
+    NEMA 17 Stepper Mount
+    Adjustable Y Belt Holder for GT2
+    LM8UU Holder
+    Linear Bushing
+    Belt Tensioner
+    EndStop MicroSwitch
