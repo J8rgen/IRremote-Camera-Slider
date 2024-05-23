@@ -1,24 +1,11 @@
 #include "IRremote.h"
 
-#define IR_RECEIVE_PIN 7
-#define ENDSTOP_PIN 4
+#define IR_RECEIVE_PIN 9 //was 7
+#define ENDSTOP_PIN 10  //was 4
+const int stepPin = 7; //was 3
+const int dirPin = 6; //was 2
+const int enPin = 13;  //not used? before was 8
 
-//screen setup--
-#include "SSD1306Ascii.h"
-#include "SSD1306AsciiAvrI2c.h"
-
-// 0X3C+SA0 - 0x3C or 0x3D
-#define I2C_ADDRESS 0x3C
-
-// Define proper RST_PIN if required.
-#define RST_PIN -1
-
-SSD1306AsciiAvrI2c oled;
-//---
-
-const int stepPin = 3;
-const int dirPin = 2;
-const int enPin = 8;
 const int maxPosition = 1000; // Maximum position limit
 
 bool direction = true;      // true for clockwise, false for counterclockwise
@@ -26,39 +13,16 @@ bool motorEnabled = false;  // flag to control motor movement, initially off
 int motorSpeed = 3000;      // default speed, Bigger = slower (in microseconds)
 int homePosition = 0;       // variable to store the home position
 
-//PRINTING
-//int printCounter = 0; // Counter for printing
-int screenUpdateCounter = 0;
-const int SCREEN_UPDATE_THRESHOLD = 150;
-
-
 void setup() {
-  Serial.begin(9600); // 9600   115200
+  Serial.begin(9600);
   IrReceiver.begin(IR_RECEIVE_PIN);
 
   pinMode(stepPin, OUTPUT);
   pinMode(dirPin, OUTPUT);
   pinMode(enPin, OUTPUT);
   pinMode(ENDSTOP_PIN, INPUT_PULLUP);
+
   digitalWrite(enPin, LOW);
-
-  //screen setup:
-#if RST_PIN >= 0
-  oled.begin(&Adafruit128x64, I2C_ADDRESS, RST_PIN);
-#else // RST_PIN >= 0
-  oled.begin(&Adafruit128x64, I2C_ADDRESS);
-#endif // RST_PIN >= 0
-  // Call oled.setI2cClock(frequency) to change from the default frequency.
-
-  // Set I2C clock speed
-  oled.setI2cClock(400000); // Set I2C clock speed to 400 kHz
-
-
-  oled.setFont(System5x7);
-  oled.clear();
-  oled.print("Hello");
-  //---
-
 }
 
 void moveMotorToPosition(int targetPosition) {
@@ -77,15 +41,6 @@ void moveMotorToPosition(int targetPosition) {
     // Print current position
     Serial.print("Current Position: ");
     Serial.println(homePosition);
-
-    //printCounter++;
-    //if (printCounter >= 50) {
-    //  oled.clear();
-    //  //oled.print("CURRENT POSITION: ");
-    //  //oled.println(homePosition);
-    //  oled.println("CURRENT POSITION: " + String(homePosition));
-    //  printCounter = 0; // Reset the counter
-    //}
   }
   motorEnabled = false; // Stop the motor
 }
@@ -128,9 +83,10 @@ void handleEndstopTriggered() {
 
   motorEnabled = true;
   unsigned long startTime = millis(); // Get the current time
-  while (millis() - startTime < 500) { // Move for 0.5 sec
+  while (millis() - startTime < 1000) { // Move for 1 sec
     moveMotor(); // Call the function to handle motor movement
     // Print current position
+    Serial.print("Current Position: ");
     Serial.println(homePosition);
   }
 
@@ -160,7 +116,7 @@ void moveMotorEndlessly() {
   motorEnabled = true;
 
 
-
+  
   while (true) {
     if (EDirection) {
       targetPosition = 900;
@@ -186,13 +142,13 @@ void moveMotorEndlessly() {
         }
         IrReceiver.resume(); // without this wont read while going up
       }
-
+      
 
       // Print current position
       Serial.print("Current Position: ");
       Serial.println(homePosition);
     }
-
+    
     IrReceiver.resume(); // without this wont read while going down?
     EDirection = !EDirection; // Toggle the direction
   }
@@ -260,25 +216,13 @@ void loop() {
   moveMotor(); // Call the function to handle motor movement
   setDirection(); // Call the function to handle direction
 
+  // Print current position
+  Serial.print("Current Position: ");
+  Serial.println(homePosition);
+
   // Check endstop status
   if (digitalRead(ENDSTOP_PIN) == LOW) {
     handleEndstopTriggered();
     delay(100);
   }
-
-
-  // PRINTING
-  // Move the motor only if it's not moving
-  // Increment screen update counter
-  screenUpdateCounter++;
-  // Check if it's time to update the screen
-  if (screenUpdateCounter >= SCREEN_UPDATE_THRESHOLD && !motorEnabled) {
-    oled.clear();
-    oled.println("CURRENT POSITION: " + String(homePosition));
-    // Reset the screen update counter
-    screenUpdateCounter = 0;
-  }
-  // Print current position to serial monitor
-  Serial.print("Current Position: ");
-  Serial.println(homePosition);
 }
