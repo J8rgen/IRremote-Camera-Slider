@@ -24,6 +24,26 @@ void setup() {
   digitalWrite(enPin, LOW);
 }
 
+void moveMotorToPosition(int targetPosition) {
+  // Move the motor in the appropriate direction
+  if (homePosition < targetPosition) {
+    direction = true; // Clockwise
+  } else {
+    direction = false; // Counterclockwise
+  }
+  setDirection(); // Call the function to handle direction
+  
+  motorEnabled = true;
+  // Move the motor until it reaches the target position
+  while (homePosition != targetPosition && (direction ? homePosition < targetPosition : homePosition > targetPosition)) {
+    moveMotor(); // Call the function to handle motor movement
+    // Print current position
+    Serial.print("Current Position: ");
+    Serial.println(homePosition);
+  }
+  motorEnabled = false; // Stop the motor
+}
+
 void moveMotor() {
   if (motorEnabled) {
     // Check for maximum position limit
@@ -64,6 +84,9 @@ void handleEndstopTriggered() {
   unsigned long startTime = millis(); // Get the current time
   while (millis() - startTime < 1000) { // Move for 1 sec
     moveMotor(); // Call the function to handle motor movement
+    // Print current position
+    Serial.print("Current Position: ");
+    Serial.println(homePosition);
   }
 
   motorEnabled = false;
@@ -85,6 +108,33 @@ void loop() {
       case 21:
         direction = false; // Counterclockwise
         motorEnabled = true;
+        break;
+      case 12: // Move to position 100
+        moveMotorToPosition(100);
+        break;
+      case 24: // Move to position 200
+        moveMotorToPosition(200);
+        break;
+      case 94: // Move to position 300
+        moveMotorToPosition(300);
+        break;
+      case 8: // Move to position 400
+        moveMotorToPosition(400);
+        break;
+      case 28: // Move to position 500
+        moveMotorToPosition(500);
+        break;
+      case 90: // Move to position 600
+        moveMotorToPosition(600);
+        break;
+      case 66: // Move to position 700
+        moveMotorToPosition(700);
+        break;
+      case 82: // Move to position 800
+        moveMotorToPosition(800);
+        break;
+      case 74: // Move to position 900
+        moveMotorToPosition(900);
         break;
       default:
         motorEnabled = false;
