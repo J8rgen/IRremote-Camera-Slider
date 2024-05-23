@@ -5,10 +5,12 @@
 const int stepPin = 3;
 const int dirPin = 2;
 const int enPin = 8;
+const int maxPosition = 1000; // Maximum position limit
 
 bool direction = true;      // true for clockwise, false for counterclockwise
 bool motorEnabled = false;  // flag to control motor movement, initially off
 int motorSpeed = 3000;      // default speed, Bigger = slower (in microseconds)
+int homePosition = 0;       // variable to store the home position
 
 void setup() {
   Serial.begin(9600);
@@ -24,10 +26,18 @@ void setup() {
 
 void moveMotor() {
   if (motorEnabled) {
-    digitalWrite(stepPin, HIGH); // Step high
-    delayMicroseconds(motorSpeed); // Delay
-    digitalWrite(stepPin, LOW); // Step low
-    delayMicroseconds(motorSpeed); // Delay
+    // Check for maximum position limit
+    if ((direction && homePosition < maxPosition) || (!direction && homePosition > -maxPosition)) {
+      digitalWrite(stepPin, HIGH); // Step high
+      delayMicroseconds(motorSpeed); // Delay
+      digitalWrite(stepPin, LOW); // Step low
+      delayMicroseconds(motorSpeed); // Delay
+      if (direction) {
+        homePosition++; // Increment position if moving clockwise
+      } else {
+        homePosition--; // Decrement position if moving counterclockwise
+      }
+    }
   } else {
     digitalWrite(stepPin, LOW); // Disable motor movement
   }
@@ -59,8 +69,10 @@ void handleEndstopTriggered() {
   motorEnabled = false;
   moveMotor(); // Call the function to handle motor movement
   delay(100);
+  
+  // Save home position
+  homePosition = 0;
 }
-
 
 void loop() {
   if (IrReceiver.decode()) {
@@ -83,6 +95,10 @@ void loop() {
 
   moveMotor(); // Call the function to handle motor movement
   setDirection(); // Call the function to handle direction
+
+  // Print current position
+  Serial.print("Current Position: ");
+  Serial.println(homePosition);
 
   // Check endstop status
   if (digitalRead(ENDSTOP_PIN) == LOW) {
