@@ -1,28 +1,44 @@
 #include "IRremote.h"
 
-#define IR_RECEIVE_PIN 9 //was 7
-#define ENDSTOP_PIN 10  //was 4
-const int stepPin = 7; //was 3
-const int dirPin = 6; //was 2
-const int enPin = 13;  //not used? before was 8
+#define IR_RECEIVE_PIN 9 // Adjusted pin number
+#define ENDSTOP_PIN 10  // Adjusted pin number
+
+const int stepPin = 7; // Adjusted pin number
+const int dirPin = 6;  // Adjusted pin number
+const int enPin = 13;  // Adjusted pin number
 
 const int maxPosition = 1000; // Maximum position limit
 
 bool direction = true;      // true for clockwise, false for counterclockwise
 bool motorEnabled = false;  // flag to control motor movement, initially off
-int motorSpeed = 3000;      // default speed, Bigger = slower (in microseconds)
+int motorSpeed = 6000;      // default speed, Bigger = slower (in microseconds)
 int homePosition = 0;       // variable to store the home position
 
+// LCD screen setup
+#include <LiquidCrystal.h>
+
+// Initialize the library with the numbers of the interface pins
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2); // Adjusted pin numbers
+
+// PRINTING
+int printCounter = 0; // Counter for printing while moving
+int screenUpdateCounter = 0; //update while still
+const int SCREEN_UPDATE_THRESHOLD = 50;
+
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200); // 9600   115200
   IrReceiver.begin(IR_RECEIVE_PIN);
 
   pinMode(stepPin, OUTPUT);
   pinMode(dirPin, OUTPUT);
   pinMode(enPin, OUTPUT);
   pinMode(ENDSTOP_PIN, INPUT_PULLUP);
-
   digitalWrite(enPin, LOW);
+
+  // Initialize the LCD screen
+  lcd.begin(16, 2);
+  lcd.print("hello, world!");
+
 }
 
 void moveMotorToPosition(int targetPosition) {
@@ -38,9 +54,21 @@ void moveMotorToPosition(int targetPosition) {
   // Move the motor until it reaches the target position
   while (homePosition != targetPosition && (direction ? homePosition < targetPosition : homePosition > targetPosition)) {
     moveMotor(); // Call the function to handle motor movement
+
     // Print current position
     Serial.print("Current Position: ");
     Serial.println(homePosition);
+    printCounter++;
+    if (printCounter >= SCREEN_UPDATE_THRESHOLD) {
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Position: ");
+      lcd.print(homePosition);
+      printCounter = 0; // Reset the counter
+    }
+
+
+
   }
   motorEnabled = false; // Stop the motor
 }
@@ -83,10 +111,9 @@ void handleEndstopTriggered() {
 
   motorEnabled = true;
   unsigned long startTime = millis(); // Get the current time
-  while (millis() - startTime < 1000) { // Move for 1 sec
+  while (millis() - startTime < 500) { // Move for 0.5 sec
     moveMotor(); // Call the function to handle motor movement
     // Print current position
-    Serial.print("Current Position: ");
     Serial.println(homePosition);
   }
 
@@ -96,10 +123,8 @@ void handleEndstopTriggered() {
 
   // Save home position
   homePosition = 0;
+
 }
-
-
-
 
 void moveMotorEndlessly() {
   int targetPosition = 100;
@@ -115,8 +140,6 @@ void moveMotorEndlessly() {
 
   motorEnabled = true;
 
-
-  
   while (true) {
     if (EDirection) {
       targetPosition = 900;
@@ -140,38 +163,28 @@ void moveMotorEndlessly() {
           // Exit the function
           return;
         }
-        IrReceiver.resume(); // without this wont read while going up
+        IrReceiver.resume(); // without this won't read while going up
       }
-      
 
       // Print current position
       Serial.print("Current Position: ");
       Serial.println(homePosition);
     }
-    
-    IrReceiver.resume(); // without this wont read while going down?
+
+    IrReceiver.resume(); // without this won't read while going down?
     EDirection = !EDirection; // Toggle the direction
   }
-  //motorEnabled = false; // Stop the motor
 }
-
-
-
-
-
-
-
-
 
 void loop() {
   if (IrReceiver.decode()) {
     Serial.println(IrReceiver.decodedIRData.command);
     switch (IrReceiver.decodedIRData.command) {
-      case 70:
+      case 67: //enne 70
         direction = true; // Clockwise
         motorEnabled = true;
         break;
-      case 21:
+      case 68: //enne 21
         direction = false; // Counterclockwise
         motorEnabled = true;
         break;
@@ -205,7 +218,6 @@ void loop() {
       case 64: // Move back and forth between positions 100 and 900 endlessly
         moveMotorEndlessly();
         break;
-
       default:
         motorEnabled = false;
         break;
@@ -216,13 +228,27 @@ void loop() {
   moveMotor(); // Call the function to handle motor movement
   setDirection(); // Call the function to handle direction
 
-  // Print current position
-  Serial.print("Current Position: ");
-  Serial.println(homePosition);
-
   // Check endstop status
   if (digitalRead(ENDSTOP_PIN) == LOW) {
     handleEndstopTriggered();
     delay(100);
   }
+
+  // Increment screen update counter
+  screenUpdateCounter++;
+  // Check if it's time to update the screen
+  if (screenUpdateCounter >= SCREEN_UPDATE_THRESHOLD && !motorEnabled) {
+    // Print current position to LCD screen
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Position: ");
+    lcd.print(homePosition);
+    // Reset the screen update counter
+    screenUpdateCounter = 0;
+    printCounter = 0; // while moving print counter also to 0
+  }
+
+  // Print current position to serial monitor
+  Serial.print("Current Position: ");
+  Serial.println(homePosition);
 }
