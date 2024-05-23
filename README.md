@@ -1,7 +1,6 @@
 Stepper Motor Control with IR Remote and LCD Display
 
 This project controls a stepper motor using an IR remote, an endstop sensor, and an LCD display. The motor can move to specified positions, respond to remote commands, and display its current position on the LCD screen.
-
 Features
 
     IR Remote Control: Control the motor's movements using an IR remote.
@@ -13,8 +12,8 @@ Hardware Requirements
 
     Arduino board (e.g., Arduino Uno)
     Stepper motor
-    Stepper motor driver (e.g. DRV8825)
-    IR receiver module (e.g. TSOP4838)
+    Stepper motor driver (e.g., DRV8825)
+    IR receiver module (e.g., TSOP4838)
     Endstop switch
     16x2 LCD display
     Connecting wires and a breadboard
@@ -35,12 +34,13 @@ Pin Configuration
 
 Useful 3D Prints
 
-Arduino Uno + Half Size Breadboard Holder
-Pulley Mount
-Linear Rail Shaft 8mm
-NEMA 17 Stepper Mount
-Adjustable Y Belt Holder for GT2
-LM8UU Holder
-Linear Bushing
-Belt Tensioner
-EndStop MicroSwitch
+    Arduino Uno + Half Size Breadboard Holder
+    Pulley Mount
+    Linear Rail Shaft 8mm
+    NEMA 17 Stepper Mount
+    Adjustable Y Belt Holder for GT2
+    LM8UU Holder
+    Linear Bushing
+    Belt Tensioner
+    EndStop MicroSwitch
+
