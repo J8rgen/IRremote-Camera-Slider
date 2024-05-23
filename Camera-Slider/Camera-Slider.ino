@@ -1,22 +1,21 @@
 #include "IRremote.h"
 
-#define IR_RECEIVE_PIN 9 // Adjusted pin number
-#define ENDSTOP_PIN 10  // Adjusted pin number
+#define IR_RECEIVE_PIN 9 
+#define ENDSTOP_PIN 10  
 
-const int stepPin = 7; // Adjusted pin number
-const int dirPin = 6;  // Adjusted pin number
-const int enPin = 13;  // Adjusted pin number
+const int stepPin = 7; 
+const int dirPin = 6;  
+const int enPin = 13;  //not used
 
 const int maxPosition = 1000; // Maximum position limit
 
 bool direction = true;      // true for clockwise, false for counterclockwise
 bool motorEnabled = false;  // flag to control motor movement, initially off
 int motorSpeed = 6000;      // default speed, Bigger = slower (in microseconds)
-int homePosition = 0;       // variable to store the home position
+int homePosition = 0;       // variable to store current position (0 is home)
 
 // LCD screen setup
 #include <LiquidCrystal.h>
-
 // Initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2); // Adjusted pin numbers
 
@@ -24,6 +23,7 @@ LiquidCrystal lcd(12, 11, 5, 4, 3, 2); // Adjusted pin numbers
 int printCounter = 0; // Counter for printing while moving
 int screenUpdateCounter = 0; //update while still
 const int SCREEN_UPDATE_THRESHOLD = 50;
+
 
 void setup() {
   Serial.begin(115200); // 9600   115200
@@ -54,6 +54,7 @@ void setup() {
   delay(100);
 }
 
+
 void moveMotorToPosition(int targetPosition) {
   // Move the motor in the appropriate direction
   if (homePosition < targetPosition) {
@@ -81,15 +82,16 @@ void moveMotorToPosition(int targetPosition) {
     }
 
     // Check endstop status
-      if (digitalRead(ENDSTOP_PIN) == LOW) {
-        handleEndstopTriggered();
-        delay(100);
-        return;
-      }
+    if (digitalRead(ENDSTOP_PIN) == LOW) {
+      handleEndstopTriggered();
+      delay(100);
+      return;
+    }
 
   }
   motorEnabled = false; // Stop the motor
 }
+
 
 void moveMotor() {
   if (motorEnabled) {
@@ -110,6 +112,7 @@ void moveMotor() {
   }
 }
 
+
 void setDirection() {
   // Handle direction
   if (direction) {
@@ -118,6 +121,7 @@ void setDirection() {
     digitalWrite(dirPin, LOW); // Set direction counterclockwise
   }
 }
+
 
 void handleEndstopTriggered() {
   motorEnabled = false;
@@ -129,10 +133,10 @@ void handleEndstopTriggered() {
 
   motorEnabled = true;
   unsigned long startTime = millis(); // Get the current time
-  while (millis() - startTime < 500) { // Move for 0.5 sec
+  while (millis() - startTime < 500) { // Move for 0.5 sec (or something like that idk)
     moveMotor(); // Call the function to handle motor movement
     // Print current position
-    Serial.println(homePosition);
+    //Serial.println(homePosition);
   }
 
   motorEnabled = false;
@@ -141,32 +145,23 @@ void handleEndstopTriggered() {
 
   // Save home position
   homePosition = 0;
-
 }
+
 
 void moveMotorEndlessly() {
   int targetPosition = 100;
-  bool EDirection = true; // Flag to indicate the direction of movement (true for 100 to 900, false for 900 to 100)
-
-  // Move the motor in the appropriate direction
-  if (homePosition < targetPosition) {
-    direction = true; // Clockwise
-  } else {
-    direction = false; // Counterclockwise
-  }
-  setDirection(); // Call the function to handle direction
-
-  motorEnabled = true;
-
+  bool EDirection = true; // Flag to indicate the direction of movement (true for 100 to 1000, false for 1000 to 100)
+  
   while (true) {
     if (EDirection) {
-      targetPosition = 900;
+      targetPosition = 1000;
       direction = true; // Clockwise
     } else {
       targetPosition = 100;
       direction = false; // Counterclockwise
     }
     setDirection(); // Call the function to handle direction
+    motorEnabled = true;
 
     // Move the motor until it reaches the target position
     while (homePosition != targetPosition && (direction ? homePosition < targetPosition : homePosition > targetPosition)) {
@@ -174,7 +169,7 @@ void moveMotorEndlessly() {
 
       //check for any new IR commands
       if (IrReceiver.decode()) {
-        if (IrReceiver.decodedIRData.command != 64) {
+        if (IrReceiver.decodedIRData.command != 25) {
           // Stop the motor
           motorEnabled = false;
           // Resume IR receiver
@@ -201,6 +196,7 @@ void moveMotorEndlessly() {
     EDirection = !EDirection; // Toggle the direction
   }
 }
+
 
 void loop() {
   if (IrReceiver.decode()) {
@@ -241,7 +237,7 @@ void loop() {
       case 74: // Move to position 900
         moveMotorToPosition(900);
         break;
-      case 64: // Move back and forth between positions 100 and 900 endlessly
+      case 25: // Move back and forth between positions 100 and 1000 endlessly
         moveMotorEndlessly();
         break;
       default:
@@ -251,10 +247,9 @@ void loop() {
     IrReceiver.resume();
   }
 
-  // needed for continuous movement---
+  // needed for continuous movement
   moveMotor(); // Call the function to handle motor movement
   setDirection(); // Call the function to handle direction
-
 
   // Check endstop status
   if (digitalRead(ENDSTOP_PIN) == LOW) {
@@ -262,9 +257,8 @@ void loop() {
     delay(100);
   }
 
-  //PRINTING
-  // Increment screen update counter
-  screenUpdateCounter++;
+  //PRINTING, screen
+  screenUpdateCounter++; 
   // Check if it's time to update the screen
   if (screenUpdateCounter >= SCREEN_UPDATE_THRESHOLD && !motorEnabled) {
     // Print current position to LCD screen
