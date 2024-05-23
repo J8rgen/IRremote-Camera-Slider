@@ -39,6 +39,19 @@ void setup() {
   lcd.begin(16, 2);
   lcd.print("hello, world!");
 
+  // endstop Setting home position
+  if (digitalRead(ENDSTOP_PIN) == HIGH) {
+    // If endstop is not triggered, move the motor counterclockwise
+    direction = false;
+    setDirection();
+    motorEnabled = true;
+    while (digitalRead(ENDSTOP_PIN) == HIGH) {
+      moveMotor();
+    }
+  }
+  // Handle endstop condition
+  handleEndstopTriggered();
+  delay(100);
 }
 
 void moveMotorToPosition(int targetPosition) {
@@ -67,7 +80,12 @@ void moveMotorToPosition(int targetPosition) {
       printCounter = 0; // Reset the counter
     }
 
-
+    // Check endstop status
+      if (digitalRead(ENDSTOP_PIN) == LOW) {
+        handleEndstopTriggered();
+        delay(100);
+        return;
+      }
 
   }
   motorEnabled = false; // Stop the motor
@@ -152,8 +170,9 @@ void moveMotorEndlessly() {
 
     // Move the motor until it reaches the target position
     while (homePosition != targetPosition && (direction ? homePosition < targetPosition : homePosition > targetPosition)) {
-      // Check for IR signal during motor movement
       moveMotor(); // Call the function to handle motor movement
+
+      //check for any new IR commands
       if (IrReceiver.decode()) {
         if (IrReceiver.decodedIRData.command != 64) {
           // Stop the motor
@@ -164,6 +183,13 @@ void moveMotorEndlessly() {
           return;
         }
         IrReceiver.resume(); // without this won't read while going up
+      }
+
+      // Check endstop status
+      if (digitalRead(ENDSTOP_PIN) == LOW) {
+        handleEndstopTriggered();
+        delay(100);
+        return;
       }
 
       // Print current position
@@ -225,8 +251,10 @@ void loop() {
     IrReceiver.resume();
   }
 
+  // needed for continuous movement---
   moveMotor(); // Call the function to handle motor movement
   setDirection(); // Call the function to handle direction
+
 
   // Check endstop status
   if (digitalRead(ENDSTOP_PIN) == LOW) {
@@ -234,6 +262,7 @@ void loop() {
     delay(100);
   }
 
+  //PRINTING
   // Increment screen update counter
   screenUpdateCounter++;
   // Check if it's time to update the screen
@@ -247,7 +276,6 @@ void loop() {
     screenUpdateCounter = 0;
     printCounter = 0; // while moving print counter also to 0
   }
-
   // Print current position to serial monitor
   Serial.print("Current Position: ");
   Serial.println(homePosition);
