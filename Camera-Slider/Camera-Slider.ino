@@ -1,7 +1,7 @@
 #include "IRremote.h"
 
 #define IR_RECEIVE_PIN 7
-#define ENDSTOP_PIN 4  
+#define ENDSTOP_PIN 4
 const int stepPin = 3;
 const int dirPin = 2;
 const int enPin = 8;
@@ -19,7 +19,7 @@ void setup() {
   pinMode(stepPin, OUTPUT);
   pinMode(dirPin, OUTPUT);
   pinMode(enPin, OUTPUT);
-  pinMode(ENDSTOP_PIN, INPUT_PULLUP); 
+  pinMode(ENDSTOP_PIN, INPUT_PULLUP);
 
   digitalWrite(enPin, LOW);
 }
@@ -32,7 +32,7 @@ void moveMotorToPosition(int targetPosition) {
     direction = false; // Counterclockwise
   }
   setDirection(); // Call the function to handle direction
-  
+
   motorEnabled = true;
   // Move the motor until it reaches the target position
   while (homePosition != targetPosition && (direction ? homePosition < targetPosition : homePosition > targetPosition)) {
@@ -92,10 +92,75 @@ void handleEndstopTriggered() {
   motorEnabled = false;
   moveMotor(); // Call the function to handle motor movement
   delay(100);
-  
+
   // Save home position
   homePosition = 0;
 }
+
+
+
+
+void moveMotorEndlessly() {
+  int targetPosition = 100;
+  bool EDirection = true; // Flag to indicate the direction of movement (true for 100 to 900, false for 900 to 100)
+
+  // Move the motor in the appropriate direction
+  if (homePosition < targetPosition) {
+    direction = true; // Clockwise
+  } else {
+    direction = false; // Counterclockwise
+  }
+  setDirection(); // Call the function to handle direction
+
+  motorEnabled = true;
+
+
+  
+  while (true) {
+    if (EDirection) {
+      targetPosition = 900;
+      direction = true; // Clockwise
+    } else {
+      targetPosition = 100;
+      direction = false; // Counterclockwise
+    }
+    setDirection(); // Call the function to handle direction
+
+    // Move the motor until it reaches the target position
+    while (homePosition != targetPosition && (direction ? homePosition < targetPosition : homePosition > targetPosition)) {
+      // Check for IR signal during motor movement
+      moveMotor(); // Call the function to handle motor movement
+      if (IrReceiver.decode()) {
+        if (IrReceiver.decodedIRData.command != 64) {
+          // Stop the motor
+          motorEnabled = false;
+          // Resume IR receiver
+          IrReceiver.resume();
+          // Exit the function
+          return;
+        }
+        IrReceiver.resume(); // without this wont read while going up
+      }
+      
+
+      // Print current position
+      Serial.print("Current Position: ");
+      Serial.println(homePosition);
+    }
+    
+    IrReceiver.resume(); // without this wont read while going down?
+    EDirection = !EDirection; // Toggle the direction
+  }
+  //motorEnabled = false; // Stop the motor
+}
+
+
+
+
+
+
+
+
 
 void loop() {
   if (IrReceiver.decode()) {
@@ -136,6 +201,10 @@ void loop() {
       case 74: // Move to position 900
         moveMotorToPosition(900);
         break;
+      case 64: // Move back and forth between positions 100 and 900 endlessly
+        moveMotorEndlessly();
+        break;
+
       default:
         motorEnabled = false;
         break;
