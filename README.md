@@ -34,12 +34,12 @@ Pin Configuration
 
 Useful 3D Prints
 
-    Arduino Uno + Half Size Breadboard Holder
-    Pulley Mount
-    Linear Rail Shaft 8mm
-    NEMA 17 Stepper Mount
-    Adjustable Y Belt Holder for GT2
-    LM8UU Holder
-    Linear Bushing
-    Belt Tensioner
-    EndStop MicroSwitch
+Arduino Uno + Half Size Breadboard Holder
+Pulley Mount
+Linear Rail Shaft 8mm
+NEMA 17 Stepper Mount
+Adjustable Y Belt Holder for GT2
+LM8UU Holder
+Linear Bushing
+Belt Tensioner
+EndStop MicroSwitch
