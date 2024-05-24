@@ -7,17 +7,17 @@ const int stepPin = 7;
 const int dirPin = 6;  
 const int enPin = 13;  //not used
 
-const int maxPosition = 1000; // Maximum position limit
+const int maxPosition = 2200; // Maximum position limit
 
 bool direction = true;      // true for clockwise, false for counterclockwise
 bool motorEnabled = false;  // flag to control motor movement, initially off
-int motorSpeed = 6000;      // default speed, Bigger = slower (in microseconds)
+int motorSpeed = 4000;      // default speed, Bigger = slower (in microseconds)
 int homePosition = 0;       // variable to store current position (0 is home)
 
-// LCD screen setup
+// LCD screen setups
 #include <LiquidCrystal.h>
 // Initialize the library with the numbers of the interface pins
-LiquidCrystal lcd(12, 11, 5, 4, 3, 2); // Adjusted pin numbers
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 
 // PRINTING
 int printCounter = 0; // Counter for printing while moving
@@ -62,7 +62,7 @@ void moveMotorToPosition(int targetPosition) {
   } else {
     direction = false; // Counterclockwise
   }
-  setDirection(); // Call the function to handle direction
+  setDirection(); // Call the function to set direction
 
   motorEnabled = true;
   // Move the motor until it reaches the target position
@@ -150,11 +150,11 @@ void handleEndstopTriggered() {
 
 void moveMotorEndlessly() {
   int targetPosition = 100;
-  bool EDirection = true; // Flag to indicate the direction of movement (true for 100 to 1000, false for 1000 to 100)
+  bool EDirection = true; // Flag to indicate the direction of movement (true for 100 to 2000, false for 2000 to 100)
   
   while (true) {
     if (EDirection) {
-      targetPosition = 1000;
+      targetPosition = 2000;
       direction = true; // Clockwise
     } else {
       targetPosition = 100;
@@ -211,31 +211,31 @@ void loop() {
         motorEnabled = true;
         break;
       case 12: // Move to position 100
-        moveMotorToPosition(100);
-        break;
-      case 24: // Move to position 200
         moveMotorToPosition(200);
         break;
-      case 94: // Move to position 300
-        moveMotorToPosition(300);
-        break;
-      case 8: // Move to position 400
+      case 24: // Move to position 200
         moveMotorToPosition(400);
         break;
-      case 28: // Move to position 500
-        moveMotorToPosition(500);
-        break;
-      case 90: // Move to position 600
+      case 94: // Move to position 300
         moveMotorToPosition(600);
         break;
-      case 66: // Move to position 700
-        moveMotorToPosition(700);
-        break;
-      case 82: // Move to position 800
+      case 8: // Move to position 400
         moveMotorToPosition(800);
         break;
+      case 28: // Move to position 500
+        moveMotorToPosition(1000);
+        break;
+      case 90: // Move to position 600
+        moveMotorToPosition(1200);
+        break;
+      case 66: // Move to position 700
+        moveMotorToPosition(1400);
+        break;
+      case 82: // Move to position 800
+        moveMotorToPosition(1600);
+        break;
       case 74: // Move to position 900
-        moveMotorToPosition(900);
+        moveMotorToPosition(1800);
         break;
       case 25: // Move back and forth between positions 100 and 1000 endlessly
         moveMotorEndlessly();
