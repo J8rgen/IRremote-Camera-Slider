@@ -1,6 +1,8 @@
 # Stepper Motor Control with IR Remote and LCD Display
 
+
 This project controls a stepper motor using an IR remote, an endstop sensor, and an LCD display. The motor can move to specified positions, respond to remote commands, and display its current position on the LCD screen.
+A real spaghetti code monster.
 
 ## Features
 
