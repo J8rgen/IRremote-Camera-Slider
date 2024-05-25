@@ -14,6 +14,9 @@ bool motorEnabled = false;  // flag to control motor movement, initially off
 int motorSpeed = 4000;      // default speed, Bigger = slower (in microseconds)
 int homePosition = 0;       // variable to store current position (0 is home)
 
+const int speedLevels[] = {2000, 4000, 6000}; // Define 3 speed levels 
+int currentSpeedIndex = 1; // Start with default speed 4000
+
 // LCD screen setups
 #include <LiquidCrystal.h>
 // Initialize the library with the numbers of the interface pins
@@ -23,7 +26,6 @@ LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 int printCounter = 0; // Counter for printing while moving
 int screenUpdateCounter = 0; //update while still
 const int SCREEN_UPDATE_THRESHOLD = 50;
-
 
 void setup() {
   Serial.begin(115200); // 9600   115200
@@ -54,7 +56,6 @@ void setup() {
   delay(100);
 }
 
-
 void moveMotorToPosition(int targetPosition) {
   // Move the motor in the appropriate direction
   if (homePosition < targetPosition) {
@@ -62,7 +63,7 @@ void moveMotorToPosition(int targetPosition) {
   } else {
     direction = false; // Counterclockwise
   }
-  setDirection(); // Call the function to set direction
+  setDirection(); // Call the function to handle direction
 
   motorEnabled = true;
   // Move the motor until it reaches the target position
@@ -72,12 +73,11 @@ void moveMotorToPosition(int targetPosition) {
     // Print current position
     Serial.print("Current Position: ");
     Serial.println(homePosition);
+
+    // Update LCD screen periodically
     printCounter++;
     if (printCounter >= SCREEN_UPDATE_THRESHOLD) {
-      lcd.clear();
-      lcd.setCursor(0, 0);
-      lcd.print("Position: ");
-      lcd.print(homePosition);
+      updateLCD();
       printCounter = 0; // Reset the counter
     }
 
@@ -91,7 +91,6 @@ void moveMotorToPosition(int targetPosition) {
   }
   motorEnabled = false; // Stop the motor
 }
-
 
 void moveMotor() {
   if (motorEnabled) {
@@ -108,10 +107,10 @@ void moveMotor() {
       }
     }
   } else {
-    digitalWrite(stepPin, LOW); // Disable motor movement
+    digitalWrite(stepPin, LOW); // Disable motor movement 
+    
   }
 }
-
 
 void setDirection() {
   // Handle direction
@@ -122,21 +121,23 @@ void setDirection() {
   }
 }
 
-
 void handleEndstopTriggered() {
   motorEnabled = false;
-  moveMotor(); // Call the function to handle motor movement
+  moveMotor(); 
   delay(100);
 
+  // Set speed to 2 so home position is always set the same 
+  currentSpeedIndex = 1;
+  motorSpeed = speedLevels[currentSpeedIndex];
+  updateLCD(); // Update LCD to reflect the speed change
+
   direction = true; // Clockwise
-  setDirection(); // Call the function to handle direction
+  setDirection(); 
 
   motorEnabled = true;
   unsigned long startTime = millis(); // Get the current time
   while (millis() - startTime < 500) { // Move for 0.5 sec (or something like that idk)
     moveMotor(); // Call the function to handle motor movement
-    // Print current position
-    //Serial.println(homePosition);
   }
 
   motorEnabled = false;
@@ -146,7 +147,6 @@ void handleEndstopTriggered() {
   // Save home position
   homePosition = 0;
 }
-
 
 void moveMotorEndlessly() {
   int targetPosition = 100;
@@ -197,48 +197,81 @@ void moveMotorEndlessly() {
   }
 }
 
+void increaseSpeed() {
+  if (currentSpeedIndex < 2) {
+    currentSpeedIndex++;
+    motorSpeed = speedLevels[currentSpeedIndex];
+  }
+  updateLCD();
+}
+
+void decreaseSpeed() {
+  if (currentSpeedIndex > 0) {
+    currentSpeedIndex--;
+    motorSpeed = speedLevels[currentSpeedIndex];
+  }
+  updateLCD();
+}
+
+void updateLCD() {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Position: ");
+  lcd.print(homePosition);
+  lcd.setCursor(0, 1);
+  lcd.print("Speed: ");
+  lcd.print(3 - currentSpeedIndex); // Display speed level (1, 2, or 3)
+}
 
 void loop() {
   if (IrReceiver.decode()) {
     Serial.println(IrReceiver.decodedIRData.command);
     switch (IrReceiver.decodedIRData.command) {
-      case 67: //enne 70
+      case 67:
         direction = true; // Clockwise
         motorEnabled = true;
         break;
-      case 68: //enne 21
+      case 68:
         direction = false; // Counterclockwise
         motorEnabled = true;
         break;
-      case 12: // Move to position 100
+      case 12: 
         moveMotorToPosition(200);
         break;
-      case 24: // Move to position 200
+      case 24: 
         moveMotorToPosition(400);
         break;
-      case 94: // Move to position 300
+      case 94: 
         moveMotorToPosition(600);
         break;
-      case 8: // Move to position 400
+      case 8: 
         moveMotorToPosition(800);
         break;
-      case 28: // Move to position 500
+      case 28: 
         moveMotorToPosition(1000);
         break;
-      case 90: // Move to position 600
+      case 90: 
         moveMotorToPosition(1200);
         break;
-      case 66: // Move to position 700
+      case 66: 
         moveMotorToPosition(1400);
         break;
-      case 82: // Move to position 800
+      case 82: 
         moveMotorToPosition(1600);
         break;
-      case 74: // Move to position 900
+      case 74: 
         moveMotorToPosition(1800);
         break;
-      case 25: // Move back and forth between positions 100 and 1000 endlessly
+      case 25: 
         moveMotorEndlessly();
+        break;
+      case 70: // Arbitrary command for increasing speed
+        decreaseSpeed(); // Decrease speed index
+        delay(500);
+        break;
+      case 21: // Arbitrary command for decreasing speed
+        increaseSpeed(); // Increase speed index
+        delay(500);
         break;
       default:
         motorEnabled = false;
@@ -257,19 +290,19 @@ void loop() {
     delay(100);
   }
 
-  //PRINTING, screen
+  // Update the screen
   screenUpdateCounter++; 
-  // Check if it's time to update the screen
   if (screenUpdateCounter >= SCREEN_UPDATE_THRESHOLD && !motorEnabled) {
-    // Print current position to LCD screen
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print("Position: ");
-    lcd.print(homePosition);
-    // Reset the screen update counter
+    updateLCD();
     screenUpdateCounter = 0;
-    printCounter = 0; // while moving print counter also to 0
+    printCounter = 0;
   }
+  if (screenUpdateCounter >= SCREEN_UPDATE_THRESHOLD && homePosition >= maxPosition) {
+    updateLCD();
+    screenUpdateCounter = 0;
+    printCounter = 0;
+  }
+
   // Print current position to serial monitor
   Serial.print("Current Position: ");
   Serial.println(homePosition);
