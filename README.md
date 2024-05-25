@@ -48,3 +48,5 @@ A real spaghetti code monster.
 - [EndStop MicroSwitch](https://www.thingiverse.com/thing:6004532)
 
 ![slider sketch_bb](https://github.com/J8rgen/IRremote-Camera-Slider/assets/92487999/8f815d2a-00be-4bf4-9e0c-52539b97b2b1)
+![438299736_1002536721303938_8233111987617579257_n](https://github.com/J8rgen/IRremote-Camera-Slider/assets/92487999/419d0c81-8476-46b3-9c95-6cff30740a02)
+
