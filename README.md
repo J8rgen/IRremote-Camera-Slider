@@ -48,7 +48,7 @@ This project controls a stepper motor using an IR remote, an endstop, and an LCD
 - [Belt Tensioner](https://www.thingiverse.com/thing:10082)
 - [EndStop MicroSwitch](https://www.thingiverse.com/thing:6004532)
 
-![slider sketch_bb](https://github.com/J8rgen/IRremote-Camera-Slider/assets/92487999/8f815d2a-00be-4bf4-9e0c-52539b97b2b1)
+![slider sketch_bb](https://github.com/J8rgen/IRremote-Camera-Slider/assets/92487999/1605148b-885b-4c20-a29d-6932083d793b)
 
 ![438312516_778935067683008_1630054875905765698_n](https://github.com/J8rgen/IRremote-Camera-Slider/assets/92487999/07ea4dfe-e610-4065-b814-46f4de3c3c8e)
 ![441869269_1546948859184770_1462521707382239606_n](https://github.com/J8rgen/IRremote-Camera-Slider/assets/92487999/3835d9f5-3c27-48a1-a7c8-b6097a2a493b)
