@@ -5,7 +5,6 @@ This project controls a stepper motor using an IR remote, an endstop, and an LCD
 
 ## Features
 
-- Spaghetti code.
 - IR Remote Control: Control the motor's movements using an IR remote.
 - Endstop: Automatically sets the home position using an endstop.
 - 3 different motor speeds.
